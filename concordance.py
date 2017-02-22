@@ -19,19 +19,19 @@ def removePunctuation( mystr, removeEndOfSentence=False ):
 		removePunctuation += [ '.', '!', '?' ]
 		if( mystr[ -1 ] in removePunctuation ):
 			mystr = mystr.replace( mystr[ -1 ], '' )
-	
+
 	return mystr
 
 def removeWhitespaces( mystr ):
 	for whitespace in string.whitespace:
 		mystr = mystr.replace( whitespace, ' ' )
 	return mystr
-	
+
 def main():
-	
+
 	print( 'Enter the filename:' )
 	filename = raw_input()
-	
+
 	alltext = removePunctuation( open( filename, 'r' ).read() )
 	# Split when a capitalized letter comes after an end of sentence
 	# 	punctuation. The last sentence will not have a capital letter.
@@ -40,38 +40,39 @@ def main():
 	# wiki:     ((?<=[a-z0-9][.?!])|(?<=[a-z0-9][.?!]\"))(\s|\r\n)(?=\"?[A-Z])
 	# https://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
 	splitIndeces = []
-	
+
 	# Track index of sentence ending
 	for s in sentences:
 		splitIndeces.append( s.end( 0 ) - 1 )
 	splitIndeces.append( len( alltext ) )
-	
-	occurrencesDict = {}
+
 	sentenceNums = {}
-	
+
 	# Populate dictionaries with occurrences and sentence numbers
 	for i in range( len( splitIndeces ) ):
 		startIndex = 0
 		if( i != 0 ):
 			startIndex = splitIndeces[ i - 1 ]
-		curSentence = removeWhitespaces( removePunctuation( 
+		curSentence = removeWhitespaces( removePunctuation(
 			alltext[ startIndex : splitIndeces[ i ] ].strip().lower(), True )
 		)
 		for word in curSentence.split( ' ' ):
 			if( len( word ) > 0 ):
+				index = i + 1 # Sentence numbers
 				try:
-					occurrencesDict[ word ] += 1
-					sentenceNums[ word ].append( str( i + 1 ) )
+					sentenceNums[ word ]
 				except KeyError:
-					occurrencesDict[ word ] = 1
-					sentenceNums[ word ] = [ str( i + 1 ) ]
-	
+					sentenceNums[ word ] = {}
+				try:
+					sentenceNums[ word ][ str( index ) ] += 1
+				except KeyError:
+					sentenceNums[ word ][ str( index ) ] = 1
 	# Print out occurrences of words in alphabetical order and where they occur
 	ctr = 0
 	wordWidth = 28
 	alphaSize = len( string.ascii_lowercase )
-	
-	for word in sorted( occurrencesDict.keys() ):
+
+	for word in sorted( sentenceNums.keys() ):
 		prefix = chr( ord( 'a' ) + ( ctr % alphaSize ) )
 		prefix *= ( 1 + ctr // alphaSize )
 		prefix += '. '
@@ -79,12 +80,19 @@ def main():
 		if( len( pword ) > wordWidth - len( prefix ) - 3 ):
 			pword = pword[ :wordWidth - len( prefix ) - 3 ] + '...'
 		prefix += pword
+		sentences = ''
+		totalOccurrences = 0
+		for sentenceNum in sorted( sentenceNums[ word ].keys() ):
+			curCount = sentenceNums[ word ][ sentenceNum ]
+			totalOccurrences += curCount
+			sentences += ( ',' + sentenceNum ) * curCount
+		sentences = sentences[ 1: ]
 		print( '%s{%s:%s}' % (
 			prefix.ljust( wordWidth ),
-			str( occurrencesDict[ word ] ),
-			','.join( sentenceNums[ word ] ) ) 
+			str( totalOccurrences ),
+			sentences )
 		)
 		ctr += 1
-		
+
 if __name__ == "__main__":
 	main()
