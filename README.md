@@ -17,3 +17,5 @@ The program uses STDIN to prompt for the filename to process and prints the conc
 No concordance program is perfect for the English language due to nuances. I came up with my own regex which terminates sentences after seeing a punctuation point, followed by any number of whitespaces, followed by a capital letter. It's generally ill-advised to start a sentence with a digit, so I opted to not use the regex published by others. The regex choice is appropriate for the scope of this program.
 
 Read more on Wikipedia: https://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
+
+If a word is too large for the field size in printing, the word is truncated with an ellipsis. 
